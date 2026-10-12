@@ -27,7 +27,7 @@ use std::io::BufReader;
 use std::io::BufWriter;
 use std::io::Result;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct TaskOptions {
     pub cmd: String,
     #[serde(default)]
@@ -36,7 +36,7 @@ pub struct TaskOptions {
 
 pub type Tasks = HashMap<String, TaskOptions>;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Model {
     #[serde(default)]
     pub limite_tasks: Option<i32>,
