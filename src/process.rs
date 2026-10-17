@@ -117,7 +117,7 @@ pub fn run_chained(chained_commands: CommandChainedList) -> Vec<ProcInfo> {
     list_of_chained_commands
 }
 
-/// run_chained_async runs every inner chain (deps are sequential inside a chain).
+/// run_multi_chained runs every inner chain (deps are sequential inside a chain).
 /// `separate_proc: false` -> if fasle chains run one after another in this proc otherwise every chain gets its own proc (thread) so all chains run concurrently
 pub fn run_multi_chained(
     multi_chained: CommandMultiChainedList,
