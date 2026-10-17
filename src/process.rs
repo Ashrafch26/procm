@@ -5,7 +5,8 @@ use std::process::{
     Command,
     Child,
     ExitStatus,
-    Output
+    Output,
+    Stdio
 };
 
 use std::io::Result;
@@ -67,7 +68,10 @@ pub fn run_cmd_async(cmd: String) -> Result<Child>{
     for i in 1..splitted.len() {
         command.arg(splitted[i]);
     }
-    command.spawn()
+    command
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
 }
 
 ///run_chained must be a single proc because it's chained and each command has a dep
@@ -96,7 +100,7 @@ pub fn run_chained(chained_commands: CommandChainedList) -> Vec<ProcInfo> {
                             ExitStatus::default(),
                             Some(e.to_string()),
                             None,
-                            false,
+                            true,
                         );
                         list_of_chained_commands.push(info);
                     }
