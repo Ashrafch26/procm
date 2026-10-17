@@ -9,6 +9,7 @@ use std::process::{
 };
 
 use std::io::Result;
+use std::thread;
 
 ///
 /// ProcInfo is struct that holds the informations of the process that is already ran and finished
@@ -116,14 +117,28 @@ pub fn run_chained(chained_commands: CommandChainedList) -> Vec<ProcInfo> {
     list_of_chained_commands
 }
 
-pub fn run_chained_async(multi_chained: CommandMultiChainedList) -> ProcInfoChainedList {
-    let mut ret: ProcInfoChainedList = Vec::new();
-
-    for chain in &multi_chained {
-        let chain_clone = chain.clone();
-        let info_chain = run_chained(chain_clone);
-        ret.push(info_chain);
+/// run_chained_async runs every inner chain (deps are sequential inside a chain).
+/// `separate_proc: false` -> if fasle chains run one after another in this proc otherwise every chain gets its own proc (thread) so all chains run concurrently
+pub fn run_multi_chained(
+    multi_chained: CommandMultiChainedList,
+    separate_proc: bool,
+) -> ProcInfoChainedList {
+    if !separate_proc {
+        let mut ret: ProcInfoChainedList = Vec::new();
+        for chain in &multi_chained {
+            let info_chain = run_chained(chain.clone());
+            ret.push(info_chain);
+        }
+        return ret;
     }
 
-    ret
+    let mut handles = Vec::with_capacity(multi_chained.len());
+    for chain in multi_chained {
+        handles.push(thread::spawn(move || run_chained(chain)));
+    }
+
+    handles
+        .into_iter()
+        .map(|handle| handle.join().unwrap_or_default())
+        .collect()
 }
