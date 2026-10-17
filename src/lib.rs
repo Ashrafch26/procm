@@ -5,7 +5,7 @@ pub mod json;
 // pub mod engine;
 // pub mod kahn;
 // pub mod logs;
-// pub mod process;
+pub mod process;
 // pub mod task_manager;
 
 #[pyfunction]
