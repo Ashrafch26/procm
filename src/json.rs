@@ -8,8 +8,12 @@
 // ```json
 // {
 //   "limite_tasks": 2,
+//   "exit_on_first_error": true,
+//   "bind" : {
+//      "duration" : "5"
+//   },
 //   "tasks": {
-//     "1": { "cmd": "sleep 5" },
+//     "1": { "cmd": "sleep ^duration^" },
 //     "2": { "cmd": "sleep 10", "deps": ["1"] }
 //   }
 // }
@@ -35,11 +39,15 @@ pub struct TaskOptions {
 }
 
 pub type Tasks = HashMap<String, TaskOptions>;
+pub type Bindings = HashMap<String, String>;
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Default)]
 pub struct Model {
     #[serde(default)]
     pub limite_tasks: Option<i32>,
+    #[serde(default)]
+    pub exit_on_first_error: Option<bool>, // this field makes the engine exit on first error
+    pub bind: Option<Bindings>,
     pub tasks: Tasks
 }
 
@@ -59,4 +67,89 @@ pub fn unload(file_path: &str, model: &Model) -> Result<()> {
 
     serde_json::to_writer_pretty(writer, model)
         .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
+}
+
+/// EngineTemplate: the real template that used by the engine after parsing bindings and expressions
+/// in json file
+pub struct EngineTemplate {
+    pub model : Result<Model>
+}
+
+/// replaces every `^var^` occurrence in `cmd` with the value of `var`
+/// in `bind`. occurrences whose variable is not defined in `bind` are
+/// left untouched.
+fn substitute_bindings(cmd: &str, bind: &Bindings) -> String {
+    let mut out = String::with_capacity(cmd.len());
+    let mut rest = cmd;
+
+    while let Some(start) = rest.find('^') {
+        out.push_str(&rest[..start]);
+        let after = &rest[start + 1..];
+
+        match after.find('^') {
+            Some(end) => {
+                let var = &after[..end];
+                match bind.get(var) {
+                    Some(value) => out.push_str(value),
+                    None => {
+                        out.push('^');
+                        out.push_str(var);
+                        out.push('^');
+                    }
+                }
+                rest = &after[end + 1..];
+            }
+            None => {
+                out.push_str(&rest[start..]);
+                return out;
+            }
+        }
+    }
+
+    out.push_str(rest);
+    out
+}
+
+impl EngineTemplate {
+    pub fn new(file_path: &str) -> Self {
+        let model = load(file_path);
+        Self {
+            model : model
+        }
+    }
+
+    pub fn get_error(self) -> Option<String> {
+        let mut ret = String::new();
+
+        if let Some(err) =  self.model.err()  {
+            ret.push_str(err.to_string().as_str());
+        } else {
+            return None;
+        }
+
+        Some(ret)
+    }
+
+    pub fn parse(self) -> Model {
+        let og_model = self.model.unwrap();
+        let bind = og_model.bind.clone().unwrap_or_default();
+
+        let mut model = Model {
+            limite_tasks: og_model.limite_tasks,
+            exit_on_first_error: og_model.exit_on_first_error,
+            bind: og_model.bind,
+            tasks: Tasks::new(),
+        };
+
+        for (task_id, option) in og_model.tasks {
+            model.tasks.insert(
+                task_id,
+                TaskOptions {
+                    cmd: substitute_bindings(&option.cmd, &bind),
+                    deps: option.deps,
+                },
+            );
+        }
+        model
+    }
 }

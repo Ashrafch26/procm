@@ -35,7 +35,7 @@ impl ProcInfo {
         }
     }
 
-    fn is_ok(&self) -> bool {
+    pub fn is_ok(&self) -> bool {
         self.status.success()
     }
 }
