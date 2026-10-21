@@ -5,7 +5,7 @@ edition = "2024"
 
 [lib]
 name = "pyrust"
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 # pyo3 for implementing python functions in rust
@@ -13,6 +13,3 @@ pyo3 = {version = "0.23", features = ["extension-module", "abi3-py38"]}
 # for json serialization and deserialization
 serde = { version = "=1.0.229" , features = ["derive"]}
 serde_json = "1.0.154"
-# for more powerfull async tasks
-# NOTE: it can be removed if it requiers us to implement or manage processes from scratch
-tokio = { version = "1.53.2", features = ["full"] }
