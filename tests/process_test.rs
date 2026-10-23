@@ -108,9 +108,9 @@ fn test_run_chained() {
         assert!(info.err.is_none());
         assert!(info.out.is_some());
     }
-    assert_eq!(infos[0].cmd, "echo one");
+    assert_eq!(infos[0].cmd, "cmd /C echo one");
     assert_eq!(infos[0].out.as_ref().unwrap().stdout, b"one\r\n");
-    assert_eq!(infos[1].cmd, "echo two");
+    assert_eq!(infos[1].cmd, "cmd /C echo two");
     assert_eq!(infos[1].out.as_ref().unwrap().stdout, b"two\r\n");
 }
 
