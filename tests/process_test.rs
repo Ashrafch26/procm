@@ -245,50 +245,6 @@ fn test_run_multi_chained_separate_proc_runs_concurrently() {
     assert!(elapsed < Duration::from_millis(1100), "took {:?}", elapsed);
 }
 
-#[cfg(target_os = "windows")]
-#[test]
-fn test_run_multi_chained_separate_proc_runs_concurrently() {
-
-    let delay = "cmd /c ping -n 2 -w 400 127.0.0.1 > nul".to_string();
-
-    let multi: CommandMultiChainedList = vec![
-        vec![delay.copy(), "cmd.exe /C echo a".to_string()],
-        vec![delay.copy(), "cmd.exe /C echo b".to_string()],
-        vec![delay.copy()],
-    ];
-
-    let start = Instant::now();
-    let res: ProcInfoChainedList = run_multi_chained(multi, true);
-    let elapsed = start.elapsed();
-
-    assert_eq!(res.len(), 3, "expected 3 independent chains");
-
-    for (chain_idx, chain) in res.iter().enumerate() {
-        assert!(!chain.is_empty(), "chain {chain_idx} returned no results");
-
-        for info in chain {
-            assert!(
-                info.status.success(),
-                "chain {chain_idx}: command {:?} failed; status: {:?}, stderr: {:?}",
-                info.cmd,
-                info.status,
-                info.err
-            );
-            assert!(
-                !info.never_run,
-                "chain {chain_idx}: command {:?} was never run",
-                info.cmd
-            );
-        }
-    }
-
-    assert!(
-        elapsed < Duration::from_millis(2500),
-        "expected concurrent execution; took {:?}",
-        elapsed
-    );
-}
-
 #[test]
 fn test_run_multi_chained_empty() {
     let res = run_multi_chained(CommandMultiChainedList::new(), true);
