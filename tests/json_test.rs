@@ -44,7 +44,7 @@ fn unload_writes_json_file() {
 #[test]
 fn load_parses_json_file() {
     let path = tmp_path("load");
-    fs::write(&path, r#"{ "limite_tasks": 2, "tasks": { "1": { "cmd": "sleep 5" }, "2": { "cmd": "sleep 10", "deps": ["1"] } } }"#).unwrap();
+    fs::write(&path, r#"{ "limite_tasks": 2, "tasks": { "1": { "cmd": "sleep 5" }, "2": { "cmd": "sleep 10", "deps": ["1"] } } } // comment test"#).unwrap();
     let model = load(path.to_str().unwrap()).unwrap();
     assert_eq!(model.limite_tasks, Some(2));
     assert_eq!(model.tasks.len(), 2);
