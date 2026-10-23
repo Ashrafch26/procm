@@ -171,7 +171,7 @@ fn test_run_chained_captures_stderr() {
     assert!(
         String::from_utf8_lossy(err.as_bytes()).contains("error"),
         "expected stderr to contain 'error', got: {:?}",
-        String::from_utf8_lossy(err)
+        String::from_utf8_lossy(err.as_bytes())
     );
 }
 
