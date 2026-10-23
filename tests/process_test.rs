@@ -248,9 +248,7 @@ fn test_run_multi_chained_separate_proc_runs_concurrently() {
 #[cfg(target_os = "windows")]
 #[test]
 fn test_run_multi_chained_separate_proc_runs_concurrently() {
-    let delay = || {
-        "cmd.exe /C \"ping -n 2 127.0.0.1 > nul\"".to_string()
-    };
+    let delay = || "ping -n 2 127.0.0.1 > nul".to_string();
 
     let multi: CommandMultiChainedList = vec![
         vec![delay(), "cmd.exe /C echo a".to_string()],
