@@ -1,5 +1,7 @@
 // Copyright (c) 2026 Computer Science Security Team . All Rights Reserved.
 
+// NOTE: for windows processes you might be add cmd /C prefix
+
 /// process managment
 
 use std::process::{
