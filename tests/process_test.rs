@@ -248,35 +248,38 @@ fn test_run_multi_chained_separate_proc_runs_concurrently() {
 #[cfg(target_os = "windows")]
 #[test]
 fn test_run_multi_chained_separate_proc_runs_concurrently() {
+    let delay = || {
+        "cmd.exe /C \"ping -n 2 127.0.0.1 > nul\"".to_string()
+    };
+
     let multi: CommandMultiChainedList = vec![
-        vec![
-            "powershell.exe -NoProfile -NonInteractive -Command Start-Sleep -Milliseconds 1000".to_string(),
-            "cmd /C echo a".to_string(),
-        ],
-        vec![
-            "powershell.exe -NoProfile -NonInteractive -Command Start-Sleep -Milliseconds 1000".to_string(),
-            "cmd /C echo b".to_string(),
-        ],
-        vec![
-            "powershell.exe -NoProfile -NonInteractive -Command Start-Sleep -Milliseconds 1000".to_string(),
-        ],
+        vec![delay(), "cmd.exe /C echo a".to_string()],
+        vec![delay(), "cmd.exe /C echo b".to_string()],
+        vec![delay()],
     ];
 
     let start = Instant::now();
     let res: ProcInfoChainedList = run_multi_chained(multi, true);
     let elapsed = start.elapsed();
 
-    assert_eq!(res.len(), 3);
+    assert_eq!(res.len(), 3, "expected 3 independent chains");
 
-    for chain in &res {
+    for (chain_idx, chain) in res.iter().enumerate() {
+        assert!(!chain.is_empty(), "chain {chain_idx} returned no results");
+
         for info in chain {
             assert!(
                 info.status.success(),
-                "command {:?} failed: {:?}",
+                "chain {chain_idx}: command {:?} failed; status: {:?}, stderr: {:?}",
                 info.cmd,
+                info.status,
                 info.err
             );
-            assert!(!info.never_run);
+            assert!(
+                !info.never_run,
+                "chain {chain_idx}: command {:?} was never run",
+                info.cmd
+            );
         }
     }
 
