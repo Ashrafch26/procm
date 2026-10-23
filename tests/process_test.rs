@@ -252,9 +252,9 @@ fn test_run_multi_chained_separate_proc_runs_concurrently() {
     let delay = "cmd /c ping -n 2 -w 400 127.0.0.1 > nul".to_string();
 
     let multi: CommandMultiChainedList = vec![
-        vec![delay, "cmd.exe /C echo a".to_string()],
-        vec![delay, "cmd.exe /C echo b".to_string()],
-        vec![delay],
+        vec![delay.copy(), "cmd.exe /C echo a".to_string()],
+        vec![delay.copy(), "cmd.exe /C echo b".to_string()],
+        vec![delay.copy()],
     ];
 
     let start = Instant::now();
