@@ -1,4 +1,7 @@
-# Nizam
+<div align="center">
+    <img src="./assets/logo.png" alt="Nizam Logo" width="600" >
+    <h1>Nizam</h1>
+</div>
 
 - Nizam is an Arabic word that means "system" or "order" — and that's exactly what this engine does: you can run complicated commands with their dependencies, with strong control and readable logging.
 
