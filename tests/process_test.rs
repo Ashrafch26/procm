@@ -1,4 +1,4 @@
-use pyrust::process::{
+use nizam::process::{
     CommandChainedList, CommandMultiChainedList, ProcInfoChainedList, run_chained, run_cmd,
     run_cmd_async, run_multi_chained,
 };

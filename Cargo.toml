@@ -1,10 +1,10 @@
 [package]
-name = "pyrust"
+name = "nizam"
 version = "0.1.0"
 edition = "2024"
 
 [lib]
-name = "pyrust"
+name = "nizam"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]

@@ -1,7 +1,7 @@
 
 /// tests for load and unload functions from `json.rs` moduel
 
-use pyrust::json::{load, unload, EngineTemplate, Model, TaskOptions};
+use nizam::json::{load, unload, EngineTemplate, Model, TaskOptions};
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;

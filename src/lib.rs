@@ -2,7 +2,7 @@
 use pyo3::prelude::*;
 
 pub mod json;
-// pub mod engine;
+pub mod engine;
 // pub mod kahn;
 // pub mod logs;
 pub mod process;
@@ -14,7 +14,7 @@ fn add(a: i64, b: i64) -> i64 {
 }
 
 #[pymodule]
-fn pyrust(m: &Bound<'_ , PyModule>) -> PyResult<()> {
+fn nizam(m: &Bound<'_ , PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(add, m)?)?;
     Ok(())
 }

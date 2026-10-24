@@ -1,4 +1,4 @@
-import pyrust
+import nizam
 
 if __name__ == "__main__":
-    print(pyrust.add(1,2))
+    print(nizam.add(1,2))
