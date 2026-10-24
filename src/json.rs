@@ -32,7 +32,7 @@ use std::io::Read;
 use std::io::BufWriter;
 use std::io::Result;
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct TaskOptions {
     pub cmd: String,
     #[serde(default)]
@@ -42,7 +42,7 @@ pub struct TaskOptions {
 pub type Tasks = HashMap<String, TaskOptions>;
 pub type Bindings = HashMap<String, String>;
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Default)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Default)]
 pub struct Model {
     #[serde(default)]
     pub limite_tasks: Option<i32>,
@@ -139,20 +139,20 @@ impl EngineTemplate {
         }
     }
 
-    pub fn get_error(self) -> Option<String> {
-        let mut ret = String::new();
-
-        if let Some(err) =  self.model.err()  {
-            ret.push_str(err.to_string().as_str());
-        } else {
-            return None;
+    pub fn get_error(&self) -> Option<String> {
+        match self.model.as_ref() {
+            Err(e) => Some(e.to_string()),
+            Ok(_) => None,
         }
-
-        Some(ret)
     }
 
-    pub fn parse(self) -> Model {
-        let og_model = self.model.unwrap();
+    pub fn parse(&self) -> Model {
+        let og_model = self
+            .model
+            .as_ref()
+            .expect("EngineTemplate must be valid")
+            .clone();
+
         let bind = og_model.bind.clone().unwrap_or_default();
 
         let mut model = Model {
