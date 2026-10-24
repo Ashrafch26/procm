@@ -1,4 +1,4 @@
-<div align="center">
+<div align="center" style="background-color: white; padding: 20px; border-radius: 10px; display: inline-block;">
     <img src="./assets/logo.png" alt="Nizam Logo" width="600" >
     <h1>Nizam</h1>
 </div>
