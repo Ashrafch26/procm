@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use pyrust::json::TaskOptions;
-use pyrust::kahn;
+use nizam::json::TaskOptions;
+use nizam::kahn;
 
 // nsan3ou tâches test bach nst3mlouhom fi les tests
 fn make_tasks(items: &[(&str, &[&str])]) -> HashMap<String, TaskOptions> {
