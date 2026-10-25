@@ -28,10 +28,11 @@ use serde::Serialize;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
+use std::io::Read;
 use std::io::BufWriter;
 use std::io::Result;
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct TaskOptions {
     pub cmd: String,
     #[serde(default)]
@@ -41,7 +42,7 @@ pub struct TaskOptions {
 pub type Tasks = HashMap<String, TaskOptions>;
 pub type Bindings = HashMap<String, String>;
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Default)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Default)]
 pub struct Model {
     #[serde(default)]
     pub limite_tasks: Option<i32>,
@@ -51,13 +52,33 @@ pub struct Model {
     pub tasks: Tasks
 }
 
-/// for deserialize
-pub fn load(file_path: &str) -> Result<Model> {
-    let stream = File::open(file_path)?;
-    let reader = BufReader::new(stream);
+fn remove_comments(content: &mut Vec<u8>) {
+    let cleaned: Vec<u8> = content
+        .split(|&b| b == b'\n')
+        .map(|line| {
+            let end = line
+                .windows(2)
+                .position(|w| w == b"//")
+                .unwrap_or(line.len());
+            &line[..end]
+        })
+        .filter(|line| !line.iter().all(u8::is_ascii_whitespace))
+        .flat_map(|line| line.iter().copied().chain(std::iter::once(b'\n')))
+        .collect();
 
-    serde_json::from_reader(reader)
-        .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))
+    *content = cleaned;
+}
+
+pub fn load(file_path: &str) -> Result<Model> {
+    let file = File::open(file_path)?;
+    let mut content = Vec::new();
+    BufReader::new(file).read_to_end(&mut content)?;
+    remove_comments(&mut content);
+    let content = std::str::from_utf8(&content)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
+
+    serde_json::from_str(content)
+        .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e).into())
 }
 
 /// for serialize
@@ -118,20 +139,20 @@ impl EngineTemplate {
         }
     }
 
-    pub fn get_error(self) -> Option<String> {
-        let mut ret = String::new();
-
-        if let Some(err) =  self.model.err()  {
-            ret.push_str(err.to_string().as_str());
-        } else {
-            return None;
+    pub fn get_error(&self) -> Option<String> {
+        match self.model.as_ref() {
+            Err(e) => Some(e.to_string()),
+            Ok(_) => None,
         }
-
-        Some(ret)
     }
 
-    pub fn parse(self) -> Model {
-        let og_model = self.model.unwrap();
+    pub fn parse(&self) -> Model {
+        let og_model = self
+            .model
+            .as_ref()
+            .expect("EngineTemplate must be valid")
+            .clone();
+
         let bind = og_model.bind.clone().unwrap_or_default();
 
         let mut model = Model {
